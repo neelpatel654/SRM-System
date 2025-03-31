@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-form-wrapper">
+    <h1>Create an Account</h1>
+    <p class="auth-subtitle">Sign up to get started</p>
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        {% for field in form %}
+          <div class="form-group {% if field.name == 'email' %}form-full{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="error-message">
+                {% for error in field.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="non-field-errors">
+          {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Register</button>
+      </div>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a href="{% url 'login' %}" class="login-link">Login here</a>.</p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

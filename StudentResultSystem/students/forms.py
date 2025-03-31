@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Student,Result
+from .models import Student,Result, Subject
+
+
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -22,4 +24,10 @@ class ResultForm(forms.ModelForm):
     class Meta:
         model = Result
         fields = '__all__'
-        
+
+
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['name']
+

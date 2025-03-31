@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if form.instance.pk %}Update Subject{% else %}Add Subject{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="form-title">
+    {% if form.instance.pk %}
+      <i class="fas fa-edit"></i> Update Subject - {{ form.instance.name|default:"Unnamed Subject" }}
+    {% else %}
+      <i class="fas fa-plus-circle"></i> Add Subject
+    {% endif %}
+  </h2>
+
+  <form method="post" class="styled-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% if form.errors %}
+      <div class="form-errors">
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">
+        <i class="fas fa-save"></i>
+        {% if form.instance.pk %}Update{% else %}Add{% endif %}
+      </button>
+      <a href="{% url 'subject_list' %}" class="btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Subject List
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}
