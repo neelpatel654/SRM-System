@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}No Results{% endblock %}
+
+{% block content %}
+<div class="no-results-container">
+  <i class="fas fa-exclamation-circle no-results-icon"></i>
+  <h1>No Results Found</h1>
+  <p>
+    We couldn't find your result. Please contact your teacher or administrator
+    to confirm that your profile has been added.
+  </p>
+  <a href="{% url 'dashboard' %}" class="btn btn-back">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+{% endblock %}

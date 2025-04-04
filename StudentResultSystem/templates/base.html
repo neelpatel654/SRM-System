@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Student Result Management{% endblock %}</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <meta name="description" content="Student Result Management System" />
+    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}" />
+  </head>
+
+  <body>
+    <div class="app-container">
+      <!-- HEADER -->
+      <header class="main-header">
+        <div class="header-content">
+          <div class="logo">
+            <h1>SRMS</h1>
+          </div>
+          <button id="menu-toggle" class="menu-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+
+        <!-- NAVIGATION -->
+        <nav class="main-nav" id="navbar">
+          <ul>
+            <li>
+              <a href="{% url 'dashboard' %}">
+                <i class="fa-solid fa-chart-line nav-icon"></i> Dashboard</a
+              >
+            </li>
+
+            {% if user.is_authenticated %}
+              {% if user.is_superuser %}
+                <li>
+                  <a href="{% url 'student_list' %}">
+                    <i class="fa-solid fa-user-graduate nav-icon"></i> Manage
+                    Students</a
+                  >
+                </li>
+                <li>
+                  <a href="{% url 'subject_list' %}">
+                    <i class="fa-solid fa-book nav-icon"></i> Manage Subjects</a
+                  >
+                </li>
+                <li>
+                  <a href="{% url 'result_list' %}">
+                    <i class="fa-solid fa-file-lines nav-icon"></i> Manage
+                    Results</a
+                  >
+                </li>
+              {% else %}
+                <li>
+                  <a href="{% url 'my_results' %}">
+                    <i class="fa-solid fa-file-lines nav-icon"></i> My Results</a
+                  >
+                </li>
+              {% endif %}
+              <li>
+                <a href="{% url 'logout' %}" class="logout-link">
+                  <i class="fa-solid fa-arrow-right-from-bracket nav-icon"></i>
+                  Logout</a
+                >
+              </li>
+            {% else %}
+              <li>
+                <a href="{% url 'login' %}" class="login-link">
+                  <i class="fa-solid fa-right-to-bracket nav-icon"></i> Login</a
+                >
+              </li>
+              <li>
+                <a href="{% url 'register' %}" class="register-link">
+                  <i class="fa-solid fa-user-plus nav-icon"></i> Register</a
+                >
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </header>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        {% block content %}{% endblock %}
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="main-footer">
+        <div class="footer-content">
+          <p>
+            &copy; {{ current_year|default:"2025" }} Student Result Management
+            System
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Optional Loader -->
+    <div id="global-loader" class="loader" style="display: none"></div>
+
+    <!-- Scripts -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Active nav link
+        const currentPath = window.location.pathname;
+        document.querySelectorAll(".main-nav a").forEach((link) => {
+          if (link.getAttribute("href") === currentPath) {
+            link.classList.add("active");
+          }
+        });
+
+        // Toggle mobile nav
+        const toggle = document.getElementById("menu-toggle");
+        const nav = document.getElementById("navbar");
+
+        toggle.addEventListener("click", () => {
+          nav.classList.toggle("nav-open");
+          toggle.classList.toggle("menu-open");
+        });
+
+        // Close menu when clicking outside or on a nav link
+        document.addEventListener("click", (event) => {
+          const isClickInsideNav = nav.contains(event.target);
+          const isClickOnToggle = toggle.contains(event.target);
+
+          if (!isClickInsideNav && !isClickOnToggle) {
+            nav.classList.remove("nav-open");
+            toggle.classList.remove("menu-open");
+          }
+        });
+      });
+
+      function toggleLoader(show = true) {
+        const loader = document.getElementById("global-loader");
+        loader.style.display = show ? "block" : "none";
+      }
+    </script>
+  </body>
+</html>
