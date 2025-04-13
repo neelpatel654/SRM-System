@@ -5,9 +5,37 @@ from .models import Student, Result, Subject
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db import IntegrityError
+from django.contrib import messages
 from django.db.models import Q
 
+def get_grade(percentage):
+    if percentage >= 90:
+        return "A+"
+    elif percentage >= 80:
+        return "A"
+    elif percentage >= 70:
+        return "B+"
+    elif percentage >= 60:
+        return "B"
+    elif percentage >= 50:
+        return "C"
+    elif percentage >= 40:
+        return "D"
+    else:
+        return "F"
 
+def get_remarks(grade):
+    remarks = {
+        "A+": "Outstanding performance! Keep up the excellent work.",
+        "A": "Very good performance. Continue with your dedication.",
+        "B+": "Good work! With a bit more effort, you can achieve even better results.",
+        "B": "Satisfactory performance. Focus on improving weak areas.",
+        "C": "Average performance. Need to put in more consistent effort.",
+        "D": "Just passing. Significant improvement needed in all subjects.",
+        "F": "Failed. Please consult with your instructors and work harder."
+    }
+    return remarks.get(grade, "")
 
 def admin_required(view_func):
     @login_required
@@ -19,25 +47,21 @@ def admin_required(view_func):
 
 
 def register_view(request):
-    if request.method=='POST':
+    if request.method == 'POST':
         form = RegisterForm(request.POST)
-        user = form.save(commit=False)
-        user.set_password(form.cleaned_data['password'])
-        user.save()
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
 
-        Student.objects.create(
-                user=user,
-                name=user.username,
-                email=user.email,
-                phone='',
-                address=''
-            )
-
-        login(request, user)
-        return redirect('dashboard')
+            login(request, user)
+            if user.is_superuser:
+                    return redirect('dashboard')
+            else:
+                return redirect('student_profile')
     else:
         form = RegisterForm()
-    return render(request,'register.html',{'form':form})
+    return render(request, 'register.html', {'form': form})
 
 def login_view(request):
     if request.method=='POST':
@@ -45,17 +69,31 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            user = authenticate(username=username,password=password)
+            user = authenticate(username=username, password=password)
             if user:
-                login(request,user)
-                return redirect('dashboard')
+                login(request, user)
+                # Redirect based on user type
+                if user.is_superuser:
+                    return redirect('dashboard')
+                else:
+                    return redirect('student_profile') 
     else:
         form = LoginForm()
-    return render(request,'login.html',{'form':form})
+    return render(request, 'login.html', {'form': form})
+
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('login')\
+    
+
+@login_required
+def student_profile(request):
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return redirect('logout')  # or show an error page
+    return render(request, 'student_profile.html', {'student': student})
 
 
 def student_list(request):
@@ -78,13 +116,40 @@ def student_list(request):
 
 @login_required
 def my_results(request):
-    try:
-        student = Student.objects.get(email=request.user.email)
-    except Student.DoesNotExist:
+     try:
+        student = Student.objects.get(user=request.user)
+        results = Result.objects.filter(student=student)
+        
+        # Add grade to each result
+        for result in results:
+            result.grade = get_grade(result.marks) # type: ignore
+        
+        # Calculate summary information
+        total_marks = sum(result.marks for result in results)
+        num_subjects = len(results)
+        max_possible = num_subjects * 100
+        
+        if num_subjects > 0:
+            percentage = (total_marks / max_possible) * 100
+        else:
+            percentage = 0
+            
+        overall_grade = get_grade(percentage)
+        remarks = get_remarks(overall_grade)
+        
+        context = {
+            'student': student,
+            'results': results,
+            'total_marks': total_marks,
+            'max_possible': max_possible,
+            'percentage': percentage,
+            'overall_grade': overall_grade,
+            'remarks': remarks
+        }
+        return render(request, 'my_results.html', context )
+     except Student.DoesNotExist:
+        # Handle case where user is not a student
         return render(request, 'no_results.html')
-
-    results = Result.objects.filter(student=student)
-    return render(request, 'my_results.html', {'results': results})
 
 
 
@@ -99,17 +164,25 @@ def add_student(request):
         form = StudentForm()
     return render(request,'student_form.html',{'form':form})
 
-@admin_required
+@login_required
 def update_student(request, id):
     student = Student.objects.get(pk=id)
-    if request.method=='POST':
-        form = StudentForm(request.POST,instance=student)
+
+    # Only allow superusers or the student themselves
+    if not request.user.is_superuser and student.user != request.user:
+        raise PermissionDenied("You are not allowed to update this student.")
+
+    if request.method == 'POST':
+        form = StudentForm(request.POST, request.FILES, instance=student)
         if form.is_valid():
             form.save()
-            return redirect('student_list')
+            if request.user.is_superuser:
+                return redirect('student_list')
+            return redirect('student_profile')
     else:
         form = StudentForm(instance=student)
-    return render(request,'student_form.html',{'form':form})
+
+    return render(request, 'student_form.html', {'form': form})
 
 @admin_required
 def delete_student(request, id):
@@ -120,19 +193,56 @@ def delete_student(request, id):
 
 @login_required
 def result_list(request):
-    results = Result.objects.all()
-    return render(request,'result_list.html',{'results':results})
+    # Get all students who have results
+    students = Student.objects.filter(results__isnull=False).distinct()
+    
+    # Prepare data for each student
+    student_data = {}
+    
+    for student in students:
+        results = Result.objects.filter(student=student)
+        
+        # Calculate summary information
+        total_marks = sum(result.marks for result in results)
+        num_subjects = len(results)
+        max_possible = num_subjects * 100
+        
+        if num_subjects > 0:
+            percentage = (total_marks / max_possible) * 100
+        else:
+            percentage = 0
+            
+        overall_grade = get_grade(percentage)
+        remarks = get_remarks(overall_grade)
+        
+        # Add grade to each result
+        for result in results:
+            result.grade = get_grade(result.marks) # type: ignore
+        
+        student_data[student] = {
+            'results': results,
+            'total_marks': total_marks,
+            'max_possible': max_possible,
+            'percentage': percentage,
+            'overall_grade': overall_grade,
+            'remarks': remarks
+        }
+    
+    return render(request, 'result_list.html', {'student_data': student_data})
 
 @admin_required
 def add_result(request):
-    if request.method=="POST":
+    if request.method == "POST":
         form = ResultForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('result_list')
+            try:
+                form.save()
+                return redirect('result_list')
+            except IntegrityError:
+                messages.error(request, "This student already has a result for this subject.")
     else:
         form = ResultForm()
-    return render(request,'result_form.html',{'form':form})
+    return render(request, 'result_form.html', {'form': form})
 
 
 @admin_required

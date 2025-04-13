@@ -1,65 +1,147 @@
 {% extends 'base.html' %}
-
 {% block title %}Student List{% endblock %}
 
 {% block content %}
-<h1 class="page-title"><i class="fas fa-user-graduate"></i> Student List</h1>
+<div class="student-container">
+  <h1 class="page-title"><i class="fas fa-user-graduate"></i> Student List</h1>
 
+  <div class="controls-wrapper">
+    <form method="get" action="" class="search-form">
+      <div class="search-container">
+        <input
+          type="text"
+          name="q"
+          placeholder="Search by name, email or enrollment number"
+          value="{{ query|default:'' }}"
+          class="search-input"
+        />
+        <button type="submit" class="search-button">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </form>
 
+    {% if request.user.is_superuser %}
+    <a href="{% url 'add_student' %}" class="btn btn-add">
+      <i class="fas fa-user-plus"></i> Add Student
+    </a>
+    {% endif %}
+  </div>
 
-<form method="get" action="" class="search-form">
-  <input
-    type="text"
-    name="q"
-    placeholder="🔍 Search by name or email"
-    value="{{ query|default:'' }}"
-    class="search-input"
-  />
-  <button type="submit" class="search-button">
-    <i class="fas fa-search"></i> Search
-  </button>
-</form>
-
-{% if request.user.is_superuser %}
-  <a href="{% url 'add_student' %}" class="btn btn-add">
-    <i class="fas fa-user-plus"></i> Add Student
-  </a>
-{% endif %}
-
-
-{% if page_obj.object_list %}
-  <div class="table-responsive">
-    <table class="student-table">
+  {% if page_obj.object_list %}
+  <div class="table-wrapper">
+    <table class="styled-table student-table">
       <thead>
         <tr>
-          <th><i class="fas fa-id-badge"></i> ID</th>
+          <th><i class="fas fa-id-card"></i> Enrollment</th>
           <th><i class="fas fa-user"></i> Name</th>
           <th><i class="fas fa-envelope"></i> Email</th>
-          <th><i class="fas fa-phone"></i> Phone</th>
-          <th><i class="fas fa-map-marker-alt"></i> Address</th>
-          {% if request.user.is_superuser %}
-            <th><i class="fas fa-cogs"></i> Actions</th>
-          {% endif %}
+          <th><i class="fas fa-cogs"></i> Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for student in page_obj.object_list %}
-        <tr>
-          <td>{{ student.student_id }}</td>
+        <tr class="student-row" data-student-id="{{ student.student_id }}">
+          <td>{{ student.enrollment_number }}</td>
           <td>{{ student.name }}</td>
           <td>{{ student.email }}</td>
-          <td>{{ student.phone }}</td>
-          <td>{{ student.address }}</td>
-          {% if request.user.is_superuser %}
-          <td>
-            <a href="{% url 'update_student' student.student_id %}" class="action-edit">
-              <i class="fas fa-edit"></i> Edit
+          <td class="actions-column">
+            <button class="toggle-details btn-small">
+              <i class="fas fa-info-circle"></i> Details
+            </button>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'update_student' student.student_id %}" class="action-edit" title="Edit">
+              <i class="fas fa-edit"></i>
             </a>
-            <a href="{% url 'delete_student' student.student_id %}" class="action-delete" onclick="return confirm('Are you sure?')">
-              <i class="fas fa-trash-alt"></i> Delete
+            <a href="{% url 'delete_student' student.student_id %}" class="action-delete" title="Delete"
+               onclick="return confirm('Are you sure you want to delete this student?')">
+              <i class="fas fa-trash-alt"></i>
             </a>
+            {% endif %}
           </td>
-          {% endif %}
+        </tr>
+        <tr class="details-row" id="details-{{ student.student_id }}" style="display: none;">
+          <td colspan="6">
+            <div class="student-details">
+              <div class="details-grid">
+                <div class="details-section">
+                  <h4>Student Information</h4>
+                  {% if student.profile_image %}
+                  <div class="profile-image">
+                    <img src="{{ student.profile_image.url }}" alt="{{ student.name }}" />
+                  </div>
+                  {% endif %}
+                  <div class="info-list">
+                    <div class="info-item"><span class="info-label">Full Name:</span><span class="info-value">{{ student.name }}</span></div>
+                    <div class="info-item"><span class="info-label">Enrollment ID:</span><span class="info-value">{{ student.enrollment_number }}</span></div>
+                    <div class="info-item"><span class="info-label">Contact Email:</span><span class="info-value">{{ student.email }}</span></div>
+                    <div class="info-item"><span class="info-label">Phone Number:</span><span class="info-value">{{ student.phone }}</span></div>
+                    <div class="info-item"><span class="info-label">Address:</span><span class="info-value">{{ student.address }}</span></div>
+                  </div>
+                </div>
+                
+                <div class="details-section">
+                  <h4>Academic Record</h4>
+                  {% with results=student.results.all %}
+                    {% if results %}
+                      <table class="inner-table">
+                        <thead>
+                          <tr>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for result in results %}
+                            <tr>
+                              <td>{{ result.subject.name }}</td>
+                              <td>{{ result.marks }}</td>
+                              <td>
+                                {% with grade=result.marks %}
+                                  {% if grade >= 90 %}A+
+                                  {% elif grade >= 80 %}A
+                                  {% elif grade >= 70 %}B+
+                                  {% elif grade >= 60 %}B
+                                  {% elif grade >= 50 %}C
+                                  {% elif grade >= 40 %}D
+                                  {% else %}F
+                                  {% endif %}
+                                {% endwith %}
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="3">
+                              <div class="result-summary">
+                                <span>Average: {{ student.calculate_gpa|floatformat:1 }}%</span>
+                                <span>Total Subjects: {{ results|length }}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    {% else %}
+                      <p class="no-data-message">No academic records available.</p>
+                    {% endif %}
+                  {% endwith %}
+                  
+                  {% if request.user.is_superuser %}
+                  <div class="details-actions">
+                    <a href="{% url 'add_result' %}" class="btn-primary">
+                      <i class="fas fa-plus-circle"></i> Add Result
+                    </a>
+                    <a href="{% url 'update_student' student.student_id %}" class="btn-secondary">
+                      <i class="fas fa-edit"></i> Edit Student
+                    </a>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -72,16 +154,44 @@
         <i class="fas fa-chevron-left"></i> Previous
       </a>
     {% endif %}
-
-    <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-
+    
+    <div class="page-numbers">
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <span class="current-page">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?q={{ query }}&page={{ num }}" class="page-number">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+    
     {% if page_obj.has_next %}
       <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" class="pagination-btn">
         Next <i class="fas fa-chevron-right"></i>
       </a>
     {% endif %}
   </div>
-{% else %}
-  <p class="no-data-message"><i class="fas fa-exclamation-circle"></i> No students found.</p>
-{% endif %}
+  {% else %}
+  <div class="no-data-container">
+    <p class="no-data-message"><i class="fas fa-exclamation-circle"></i> No students found.</p>
+    {% if query %}
+    <p>Try changing your search criteria or <a href="{% url 'student_list' %}">view all students</a>.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleButtons = document.querySelectorAll('.toggle-details');
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const row = button.closest('tr');
+        const studentId = row.dataset.studentId;
+        const detailRow = document.getElementById(`details-${studentId}`);
+        detailRow.style.display = detailRow.style.display === 'none' ? 'table-row' : 'none';
+      });
+    });
+  });
+</script>
 {% endblock %}

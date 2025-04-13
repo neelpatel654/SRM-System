@@ -1,32 +1,60 @@
-{% extends 'base.html' %}
-
-{% block title %}My Results{% endblock %}
+{% extends 'base.html' %}  
+{% block title %}My Academic Results{% endblock %}  
 
 {% block content %}
-<h1 class="page-title"><i class="fas fa-file-alt"></i> My Results</h1>
+<div class="results-container">
+  <div class="results-header">
+    <h1 class="page-title"><i class="fas fa-graduation-cap"></i> Academic Results</h1>
+    
+    {% if student %}
+    <div class="student-info">
+      <p><strong><i class="fas fa-user"></i> Name:</strong> {{ student.name }}</p>
+      <p><strong><i class="fas fa-id-card"></i> Enrollment No:</strong> {{ student.enrollment_number }}</p>
+    </div>
+    {% endif %}
+  </div>
 
-<div class="table-container">
-  <table class="results-table">
-    <thead>
-      <tr>
-        <th><i class="fas fa-book"></i> Subject</th>
-        <th><i class="fas fa-pen"></i> Marks</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for result in results %}
-      <tr>
-        <td>{{ result.subject.name }}</td>
-        <td>{{ result.marks }}</td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="2" class="no-data-message">
-          <i class="fas fa-info-circle"></i> No results found.
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th><i class="fas fa-book"></i> Subject</th>
+          <th><i class="fas fa-pen"></i> Marks Obtained</th>
+          <th><i class="fas fa-star"></i> Maximum Marks</th>
+          <th><i class="fas fa-percentage"></i> Percentage</th>
+          <th><i class="fas fa-award"></i> Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+        <tr>
+          <td>{{ result.subject.name }}</td>
+          <td>{{ result.marks }}</td>
+          <td>100</td>
+          <td>{{ result.marks }}%</td>
+          <td>{{ result.grade }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="no-data-message">
+            <i class="fas fa-info-circle"></i> No results found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if results %}
+      <tfoot>
+        <tr class="summary-row">
+          <td><strong>Total</strong></td>
+          <td><strong>{{ total_marks }}</strong></td>
+          <td><strong>{{ max_possible }}</strong></td>
+          <td><strong>{{ percentage|floatformat:2 }}%</strong></td>
+          <td><strong>{{ overall_grade }}</strong></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+
 </div>
 {% endblock %}

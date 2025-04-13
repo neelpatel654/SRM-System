@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container" style="max-width: 1100px; margin: 2rem auto; padding: 1rem;">
+  <!-- Profile Header -->
+  <div class="profile-header" style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+    <div class="profile-avatar" style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background-color: #f3f3f3; display: flex; align-items: center; justify-content: center;">
+      {% if student.profile_image %}
+        <img src="{{ student.profile_image.url }}" alt="{{ student.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+      {% else %}
+        <div class="avatar-placeholder" style="font-size: 2rem; font-weight: bold; color: #555;">
+          {{ student.name|make_list|first|upper }}
+        </div>
+      {% endif %}
+    </div>
+    <div>
+      <h1 style="font-size: 2rem; margin-bottom: 0.2rem;">{{ student.name }}</h1>
+      <p style="color: gray;">Student ID: <strong>{{ student.enrollment_number|default:"N/A" }}</strong></p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+    <!-- Left Column -->
+    <div style="flex: 2; min-width: 300px;">
+      <div class="card" style="border: 1px solid #ddd; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1rem;"><i class="fas fa-user-circle"></i> Personal Information</h2>
+        <ul style="list-style: none; padding: 0;">
+          <li style="margin-bottom: 0.8rem;"><strong>Email:</strong> <a href="mailto:{{ student.email }}">{{ student.email }}</a></li>
+          <li style="margin-bottom: 0.8rem;"><strong>Phone:</strong> <a href="tel:{{ student.phone }}">{{ student.phone|default:"-" }}</a></li>
+          <li><strong>Address:</strong> {{ student.address|default:"Not provided" }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div style="flex: 1; min-width: 280px;">
+      <!-- Quick Actions -->
+      <div class="card" style="border: 1px solid #ddd; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.2rem;"><i class="fas fa-bolt"></i> Quick Actions</h2>
+        <a href="{% url 'my_results' %}" class="action-btn" style="display: inline-block; margin-top: 1rem; padding: 0.6rem 1rem; background-color: #2563eb; color: white; border-radius: 8px; text-decoration: none;">
+          <i class="fas fa-clipboard-list"></i> View My Results
+        </a>
+        <a href="{% url 'update_student' student.student_id %}" class="action-btn" style="display: inline-block; margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #10b981; color: white; border-radius: 8px; text-decoration: none;">
+          <i class="fas fa-edit"></i> Edit Profile
+        </a>
+      </div>
+
+      <!-- Academic Status -->
+      <div class="card" style="border: 1px solid #ddd; border-radius: 12px; padding: 1rem;">
+        <h2 style="font-size: 1.2rem;"><i class="fas fa-chart-line"></i> Academic Status</h2>
+        <p><strong>Percentage :</strong> {{ student.calculate_gpa|floatformat:2 }} %</p>
+        <p><strong>Credits:</strong> {{ student.results.count }}</p>
+        <p><strong>Standing:</strong>
+          <span style="padding: 0.2rem 0.5rem; border-radius: 6px; color: white; background-color:
+            {% if student.calculate_gpa >= 75 %}#16a34a
+            {% elif student.calculate_gpa >= 50 %}#f59e0b
+            {% else %}#dc2626{% endif %};">
+            {% if student.calculate_gpa >= 75 %} Excellent
+            {% elif student.calculate_gpa >= 50 %} Average
+            {% else %} Poor {% endif %}
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  {% if recent_activities %}
+  <div style="margin-top: 2rem;">
+    <div class="card" style="border: 1px solid #ddd; border-radius: 12px; padding: 1.5rem;">
+      <h2 style="font-size: 1.2rem;"><i class="fas fa-history"></i> Recent Activity</h2>
+      <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+        {% for activity in recent_activities %}
+        <li style="display: flex; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid #eee;">
+          <i class="fas fa-{{ activity.icon|default:"info-circle" }} fa-lg" style="color: #4b5563;"></i>
+          <div>
+            <div style="font-weight: bold;">{{ activity.title }}</div>
+            <div style="font-size: 0.85rem; color: gray;">{{ activity.date }}</div>
+            <div style="margin-top: 0.2rem;">{{ activity.description }}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("Student profile page fully loaded.");
+  });
+</script>
+{% endblock %}
