@@ -13,6 +13,8 @@ urlpatterns = [
     path('student/update/<int:id>/',views.update_student,name='update_student'),
     path('student/delete/<int:id>/',views.delete_student,name='delete_student'),
 
+    path('profile/', views.student_profile, name='student_profile'),
+
     path('results/',views.result_list,name='result_list'),
     path('result/add/',views.add_result,name='add_result'),
     path('result/update/<int:id>/',views.update_result,name='update_result'),

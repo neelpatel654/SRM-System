@@ -35,11 +35,6 @@
         <!-- NAVIGATION -->
         <nav class="main-nav" id="navbar">
           <ul>
-            <li>
-              <a href="{% url 'dashboard' %}">
-                <i class="fa-solid fa-chart-line nav-icon"></i> Dashboard</a
-              >
-            </li>
 
             {% if user.is_authenticated %}
               {% if user.is_superuser %}
