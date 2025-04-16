@@ -34,20 +34,7 @@
       <img id="preview-img" src="#" style="max-height: 150px; border-radius: 8px;">
     </div>
 
-    {% if form.errors %}
-      <div class="form-errors">
-        <ul>
-          {% for field in form %}
-            {% for error in field.errors %}
-              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-            {% endfor %}
-          {% endfor %}
-          {% for error in form.non_field_errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
+
 
     <div class="form-actions">
       <button type="submit" class="btn-primary">
@@ -57,7 +44,7 @@
           <i class="fas fa-plus-circle"></i> Add
         {% endif %}
       </button>
-      <a href="{% url 'student_profile' %}" class="btn-secondary">
+      <a href="javascript:history.back()" class="btn-secondary">
         <i class="fas fa-times"></i> Cancel
       </a>
     </div>
@@ -67,6 +54,16 @@
 
 {% block extra_js %}
 <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const userField = document.getElementById('id_user');
+    if (userField) {
+      $('#id_user').select2({
+        placeholder: "Select a user",
+        allowClear: true,
+        width: 'resolve'
+      });
+    }
+  });
   document.addEventListener("DOMContentLoaded", function () {
     const fileInput = document.getElementById("id_profile_image");
     const previewDiv = document.getElementById("new-preview");

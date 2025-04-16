@@ -63,83 +63,7 @@
         <tr class="details-row" id="details-{{ student.student_id }}" style="display: none;">
           <td colspan="6">
             <div class="student-details">
-              <div class="details-grid">
-                <div class="details-section">
-                  <h4>Student Information</h4>
-                  {% if student.profile_image %}
-                  <div class="profile-image">
-                    <img src="{{ student.profile_image.url }}" alt="{{ student.name }}" />
-                  </div>
-                  {% endif %}
-                  <div class="info-list">
-                    <div class="info-item"><span class="info-label">Full Name:</span><span class="info-value">{{ student.name }}</span></div>
-                    <div class="info-item"><span class="info-label">Enrollment ID:</span><span class="info-value">{{ student.enrollment_number }}</span></div>
-                    <div class="info-item"><span class="info-label">Contact Email:</span><span class="info-value">{{ student.email }}</span></div>
-                    <div class="info-item"><span class="info-label">Phone Number:</span><span class="info-value">{{ student.phone }}</span></div>
-                    <div class="info-item"><span class="info-label">Address:</span><span class="info-value">{{ student.address }}</span></div>
-                  </div>
-                </div>
-                
-                <div class="details-section">
-                  <h4>Academic Record</h4>
-                  {% with results=student.results.all %}
-                    {% if results %}
-                      <table class="inner-table">
-                        <thead>
-                          <tr>
-                            <th>Subject</th>
-                            <th>Marks</th>
-                            <th>Grade</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for result in results %}
-                            <tr>
-                              <td>{{ result.subject.name }}</td>
-                              <td>{{ result.marks }}</td>
-                              <td>
-                                {% with grade=result.marks %}
-                                  {% if grade >= 90 %}A+
-                                  {% elif grade >= 80 %}A
-                                  {% elif grade >= 70 %}B+
-                                  {% elif grade >= 60 %}B
-                                  {% elif grade >= 50 %}C
-                                  {% elif grade >= 40 %}D
-                                  {% else %}F
-                                  {% endif %}
-                                {% endwith %}
-                              </td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                        <tfoot>
-                          <tr>
-                            <td colspan="3">
-                              <div class="result-summary">
-                                <span>Average: {{ student.calculate_gpa|floatformat:1 }}%</span>
-                                <span>Total Subjects: {{ results|length }}</span>
-                              </div>
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    {% else %}
-                      <p class="no-data-message">No academic records available.</p>
-                    {% endif %}
-                  {% endwith %}
-                  
-                  {% if request.user.is_superuser %}
-                  <div class="details-actions">
-                    <a href="{% url 'add_result' %}" class="btn-primary">
-                      <i class="fas fa-plus-circle"></i> Add Result
-                    </a>
-                    <a href="{% url 'update_student' student.student_id %}" class="btn-secondary">
-                      <i class="fas fa-edit"></i> Edit Student
-                    </a>
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
+              <!-- Student details content -->
             </div>
           </td>
         </tr>
@@ -149,27 +73,7 @@
   </div>
 
   <div class="pagination">
-    {% if page_obj.has_previous %}
-      <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" class="pagination-btn">
-        <i class="fas fa-chevron-left"></i> Previous
-      </a>
-    {% endif %}
-    
-    <div class="page-numbers">
-      {% for num in page_obj.paginator.page_range %}
-        {% if num == page_obj.number %}
-          <span class="current-page">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-          <a href="?q={{ query }}&page={{ num }}" class="page-number">{{ num }}</a>
-        {% endif %}
-      {% endfor %}
-    </div>
-    
-    {% if page_obj.has_next %}
-      <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" class="pagination-btn">
-        Next <i class="fas fa-chevron-right"></i>
-      </a>
-    {% endif %}
+    <!-- Pagination controls -->
   </div>
   {% else %}
   <div class="no-data-container">
@@ -177,6 +81,14 @@
     {% if query %}
     <p>Try changing your search criteria or <a href="{% url 'student_list' %}">view all students</a>.</p>
     {% endif %}
+  </div>
+  {% endif %}
+
+  {% if query %}
+  <div class="back-button-wrapper">
+    <a href="{% url 'student_list' %}" class="btn-back">
+       Back to All Students
+    </a>
   </div>
   {% endif %}
 </div>
@@ -194,4 +106,57 @@
     });
   });
 </script>
+
+<style>
+  .student-container {
+    position: relative;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .back-button-wrapper {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: transparent;
+    color: #3a86ff;
+    border-radius: 0;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-back:before {
+    content: "←";
+    margin-right: 6px;
+    font-size: 16px;
+    transition: transform 0.2s ease;
+  }
+  
+  .btn-back:hover {
+    color: #2563eb;
+    transform: translateX(-2px);
+    background-color: transparent;
+  }
+  
+  .btn-back:active {
+    transform: translateX(-1px);
+    background-color: transparent;
+  }
+  
+  .btn-back:hover:before {
+    transform: translateX(-3px);
+  }
+</style>
 {% endblock %}

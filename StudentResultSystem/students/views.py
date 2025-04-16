@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from .forms import LoginForm, RegisterForm, StudentForm, ResultForm, SubjectForm
+from .forms import LoginForm, RegisterForm, StudentForm, ResultForm, SubjectForm, StudentAddForm
 from django.contrib.auth import login,logout,authenticate
 from .models import Student, Result, Subject
 from django.contrib.auth.decorators import login_required
@@ -156,12 +156,12 @@ def my_results(request):
 @admin_required
 def add_student(request):
     if request.method=="POST":
-        form = StudentForm(request.POST)
+        form = StudentAddForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('student_list')
     else:
-        form = StudentForm()
+        form = StudentAddForm()
     return render(request,'student_form.html',{'form':form})
 
 @login_required

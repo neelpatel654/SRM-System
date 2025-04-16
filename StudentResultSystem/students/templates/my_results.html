@@ -56,5 +56,60 @@
     </table>
   </div>
 
+  <!-- Back to Dashboard Button -->
+  <div class="back-button-wrapper">
+    <a href="{% url 'dashboard' %}" class="btn-back">
+      Back to Dashboard
+    </a>
+  </div>
 </div>
+
+<style>
+  .results-container {
+    position: relative;
+    padding-bottom: 50px; 
+  }
+  
+  .back-button-wrapper {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+  }
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: transparent;
+    color: #3a86ff;
+    border-radius: 0;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-back:before {
+    content: "←";
+    margin-right: 6px;
+    font-size: 16px;
+    transition: transform 0.2s ease;
+  }
+  
+  .btn-back:hover {
+    color: #2563eb;
+    transform: translateX(-2px);
+    background-color: transparent;
+  }
+  
+  .btn-back:active {
+    transform: translateX(-1px);
+    background-color: transparent;
+  }
+  
+  .btn-back:hover:before {
+    transform: translateX(-3px);
+  }
+</style>
 {% endblock %}
