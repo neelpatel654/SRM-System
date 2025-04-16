@@ -49,6 +49,7 @@
       </div>
 
       <!-- Academic Status -->
+      {% if student.results.exists %}
       <div class="card" style="border: 1px solid #ddd; border-radius: 12px; padding: 1rem;">
         <h2 style="font-size: 1.2rem;"><i class="fas fa-chart-line"></i> Academic Status</h2>
         <p><strong>Percentage :</strong> {{ student.calculate_gpa|floatformat:2 }} %</p>
@@ -64,6 +65,11 @@
           </span>
         </p>
       </div>
+      {% else %}
+  <p style="color: gray; text-align: center; margin-top: 1rem;">
+    <i class="fas fa-info-circle"></i> No results added yet. Once results are available, Academic details will be displayed here.
+  </p>
+      {% endif %}
     </div>
   </div>
 
