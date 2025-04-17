@@ -3,6 +3,153 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
+<style>
+  /* Auth container styles */
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #f8f9fa;
+  }
+
+  .auth-form-wrapper {
+    width: 100%;
+    max-width: 480px;
+    padding: 2.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .auth-subtitle {
+    margin-bottom: 1.5rem;
+    color: #6c757d;
+    font-size: 1rem;
+  }
+
+  /* Form styles */
+  .auth-form {
+    width: 100%;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-full {
+    grid-column: span 2;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dde2e5;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+  }
+
+  .error-message {
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .non-field-errors {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: #fff8f8;
+    border-left: 3px solid #dc3545;
+    color: #dc3545;
+    border-radius: 4px;
+  }
+
+  /* Button styles */
+  .form-actions {
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #3a7bc8;
+  }
+
+  /* Footer link styles */
+  .auth-footer {
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  .login-link {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .login-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-full {
+      grid-column: span 1;
+    }
+
+    .auth-form-wrapper {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
 <div class="auth-container">
   <div class="auth-form-wrapper">
     <h1>Create an Account</h1>
@@ -13,7 +160,7 @@
 
       <div class="form-grid">
         {% for field in form %}
-          <div class="form-group {% if field.name == 'email' %}form-full{% endif %}">
+        <div class="form-group {% if field.name in 'email username address' %}form-full{% endif %}">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
             {% if field.errors %}
