@@ -1,11 +1,11 @@
-{% extends 'base.html' %}  
-{% block title %}My Academic Results{% endblock %}  
+{% extends 'base.html' %}
+{% block title %}My Academic Results{% endblock %}
 
 {% block content %}
 <div class="results-container">
   <div class="results-header">
     <h1 class="page-title"><i class="fas fa-graduation-cap"></i> Academic Results</h1>
-    
+
     {% if student %}
     <div class="student-info">
       <p><strong><i class="fas fa-user"></i> Name:</strong> {{ student.name }}</p>
@@ -58,7 +58,7 @@
 
   <!-- Back to Dashboard Button -->
   <div class="back-button-wrapper">
-    <a href="{% url 'dashboard' %}" class="btn-back">
+    <a href="{% url 'student_profile' %}" class="btn-back">
       Back to Dashboard
     </a>
   </div>
@@ -67,9 +67,9 @@
 <style>
   .results-container {
     position: relative;
-    padding-bottom: 50px; 
+    padding-bottom: 50px;
   }
-  
+
   .back-button-wrapper {
     position: absolute;
     bottom: 10px;
@@ -89,25 +89,25 @@
     border: none;
     cursor: pointer;
   }
-  
+
   .btn-back:before {
     content: "←";
     margin-right: 6px;
     font-size: 16px;
     transition: transform 0.2s ease;
   }
-  
+
   .btn-back:hover {
     color: #2563eb;
     transform: translateX(-2px);
     background-color: transparent;
   }
-  
+
   .btn-back:active {
     transform: translateX(-1px);
     background-color: transparent;
   }
-  
+
   .btn-back:hover:before {
     transform: translateX(-3px);
   }
